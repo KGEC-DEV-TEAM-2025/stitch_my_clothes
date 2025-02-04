@@ -1,8 +1,8 @@
 "use server"
 
+import connectToDatabase from "@/lib/database/connect";
+import { ShirtModel } from "@/lib/database/models/shirtModel/ShirtModel";
 import mongoose from "mongoose";
-import { connectToDatabase } from "@/lib/database/connect";
-import ShirtModel from "@/lib/database/models/shirtModel/ShirtModel";
 
 interface ProductItem {
   name: string;

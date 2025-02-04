@@ -83,6 +83,10 @@ const ProductSchema: Schema = new Schema(
       image: { url: { type: String, required: true } },
       price: { type: Number, required: true },
     },
+    measurement : {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : "MeasurementModel",
+    }
   },
   { timestamps: true }
 );

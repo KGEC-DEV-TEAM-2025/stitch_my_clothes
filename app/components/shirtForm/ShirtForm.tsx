@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   collarStyles,
   sleeveStyles,
@@ -214,6 +215,13 @@ const ShirtCustomizer: React.FC = () => {
             >
               Submit & Download the PDF
             </button>
+          </div>
+          <div className="mt-4 w-full">
+            <Link href="/measurement">
+              <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg">
+                Next
+              </button>
+            </Link>
           </div>
         </div>
       </div>

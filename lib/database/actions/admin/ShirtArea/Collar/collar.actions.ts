@@ -168,7 +168,7 @@ export const createCollar = async (
     // Save the collar with the uploaded images and other data
     const collar = new CollarModel({
       style:
-        style && style.name.trim() !== "" && style.price !== undefined
+        style && (style as any).name.trim() !== "" && style.price !== undefined
           ? {
               name: style.name,
               image: style.image
@@ -187,7 +187,7 @@ export const createCollar = async (
             }
           : undefined,
       height:
-        height && height.name.trim() !== "" && height.price !== undefined
+        height && (height as any).name.trim() !== "" && height.price !== undefined
           ? {
               name: height.name,
               icon: height.icon
@@ -201,7 +201,7 @@ export const createCollar = async (
           : undefined,
       collar_button:
         collarButton &&
-        collarButton.name.trim() !== "" &&
+        (collarButton as any).name.trim() !== "" &&
         collarButton.price !== undefined
           ? {
               name: collarButton.name,

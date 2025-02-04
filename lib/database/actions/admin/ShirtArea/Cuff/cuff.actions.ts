@@ -125,7 +125,7 @@ export const createCuff = async (
     // Save the cuff with the uploaded images and other data
     const cuff = new CuffModel({
       style:
-        style && style.name.trim() !== "" && style.price !== undefined
+        style && (style as any).name.trim() !== "" && style.price !== undefined
           ? {
               name: style.name,
               image: style.image
@@ -144,7 +144,7 @@ export const createCuff = async (
             }
           : undefined,
       cufflinks:
-        cufflinks && cufflinks.name.trim() !== "" && cufflinks.price !== undefined
+        cufflinks && (cufflinks as any).name.trim() !== "" && cufflinks.price !== undefined
           ? {
               name: cufflinks.name,
               image: cufflinks.image
