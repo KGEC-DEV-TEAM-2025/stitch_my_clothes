@@ -1,6 +1,5 @@
 "use server";
 
-// import { handleError } from "@/lib/utils";
 import connectToDatabase from "../connect";
 import Product from "../models/product.model";
 import User from "../models/user.model";
@@ -10,50 +9,42 @@ import Cart from "../models/cart.model";
 export async function saveCartForUser(cart: any, clerkId: string) {
   try {
     await connectToDatabase();
-    let products = [];
+    let products: any[] = [];
     let user = await User.findOne({ clerkId });
     await Cart.deleteOne({ user: user._id });
 
     for (let i = 0; i < cart.length; i++) {
       let dbProduct: any = await Product.findById(cart[i]._id).lean();
       let subProduct = dbProduct.subProducts[cart[i].style];
-      let tempProduct: any = {};
-      tempProduct.name = dbProduct.name;
-      tempProduct.product = dbProduct._id;
-      tempProduct.color = {
-        color: cart[i].color.color,
-        image: cart[i].color.image,
-      };
-      tempProduct.image = subProduct.images[0].url;
-      tempProduct.qty = Number(cart[i].qty);
-      tempProduct.size = cart[i].size;
-      tempProduct.vendor = cart[i].vendor ? cart[i].vendor : {};
-      tempProduct.vendorId =
-        cart[i].vendor && cart[i].vendor._id ? cart[i].vendor._id : "";
+      let sizeObj = subProduct.sizes.find((p: any) => p.size === cart[i].size);
+      let originalPrice: number = Number(sizeObj.price);
+      let discount = subProduct.discount || 0;
+      let finalPrice: number =
+        discount > 0 ? originalPrice - (originalPrice * discount) / 100 : originalPrice;
+      
+      products.push({
+        product: dbProduct._id,
+        qty: Number(cart[i].qty),
+        price: Number(finalPrice.toFixed(2)),
+      });
+    }
+    let cartTotal: number = products.reduce(
+      (sum, prod) => sum + prod.price * prod.qty,
+      0
+    );
 
-      let price = Number(
-        subProduct.sizes.find((p: any) => p.size == cart[i].size).price
-      );
-      tempProduct.price =
-        subProduct.discount > 0
-          ? (price - (price * Number(subProduct.discount)) / 100).toFixed(2)
-          : price.toFixed(2);
-      products.push(tempProduct);
-    }
-    let cartTotal = 0;
-    for (let i = 0; i < products.length; i++) {
-      cartTotal = cartTotal + products[i].price * products[i].qty;
-    }
     await new Cart({
       products,
-      cartTotal: cartTotal.toFixed(2),
+      cartTotal: Number(cartTotal.toFixed(2)),
+      totalAfterDiscount: Number(cartTotal.toFixed(2)), // update if applying coupon later
       user: user._id,
     }).save();
     return { success: true };
-  } catch(error){
-
+  } catch (error) {
+    throw new Error("Error saving cart: " + error);
   }
 }
+
 export async function getSavedCartForUser(clerkId: string) {
   try {
     await connectToDatabase();
@@ -64,43 +55,38 @@ export async function getSavedCartForUser(clerkId: string) {
       cart: JSON.parse(JSON.stringify(cart)),
       address: JSON.parse(JSON.stringify(user.address)),
     };
-  }catch(error){
-
+  } catch (error) {
+    throw new Error("Error getting cart: " + error);
   } 
 }
 
-// update cart for user
+// update cart for user (recalculate prices using product details)
 export async function updateCartForUser(products: any) {
   try {
     await connectToDatabase();
-    const promises = products.map(async (p: any) => {
+    const updatedProductsPromises = products.map(async (p: any) => {
       let dbProduct: any = await Product.findById(p._id).lean();
-      let originalPrice = dbProduct.subProducts[p.style].sizes.find(
-        (x: any) => x.size == p.size
-      ).price;
-      let quantity = dbProduct.subProducts[p.style].sizes.find(
-        (x: any) => x.size == p.size
-      ).qty;
-      let discount = dbProduct.subProducts[p.style].discount;
+      let subProduct = dbProduct.subProducts[p.style];
+      let sizeObj = subProduct.sizes.find((x: any) => x.size === p.size);
+      let originalPrice: number = Number(sizeObj.price);
+      let discount = subProduct.discount || 0;
+      let finalPrice: number =
+        discount > 0
+          ? originalPrice - (originalPrice * discount) / 100
+          : originalPrice;
       return {
-        ...p,
-        priceBefore: originalPrice,
-        price:
-          discount > 0
-            ? originalPrice - originalPrice / discount
-            : originalPrice,
-        discount,
-        quantity,
-        shippingFee: dbProduct.shipping,
+        product: p._id,
+        qty: Number(p.qty),
+        price: Number(finalPrice.toFixed(2)),
       };
     });
-    const data = await Promise.all(promises);
+    const updatedProducts = await Promise.all(updatedProductsPromises);
     return {
       success: true,
-      message: "successfully updated the cart.",
-      data: JSON.parse(JSON.stringify(data)),
+      message: "Successfully updated the cart.",
+      data: JSON.parse(JSON.stringify(updatedProducts)),
     };
   } catch (error) {
-
+    throw new Error("Error updating cart: " + error);
   }
 }

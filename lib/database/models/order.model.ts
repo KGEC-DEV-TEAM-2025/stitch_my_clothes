@@ -1,101 +1,72 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface Order extends Document {
-  shirt:[{
-    type : mongoose.Types.ObjectId;
-    ref: "ShirtModel";
-  }]// Reference to the Shirt _id
+  shirt: mongoose.Types.ObjectId[]; // multiple shirt items referenced
   orderConfirmation: boolean;
   deliveryStatus: "pending" | "shipped" | "delivered";
   price: {
     base: number;
     discount: number;
-    delivaryCost: number;
+    deliveryCost: number;
     total: number;
   };
-  deliveryCost: number;
   paymentMethod: "credit_card" | "debit_card" | "paypal" | "cash_on_delivery";
   paymentTime: Date;
-  receipt: string; // String to store the PDF document URL or receipt
+  receipt: string; // URL or PDF receipt link
   orderAddress: {
     phoneNumber: string;
-    address1 : string;
-    address2 : string;
-    city : string;
-    state : string;
-    zipCode : string;
-    country : string;
+    address1: string;
+    address2: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
     active: boolean;
   };
 }
 
-// Define the Order schema
 export const OrderSchema = new Schema<Order>({
-  shirt: [{ 
-    type: mongoose.Schema.Types.ObjectId, // Correctly reference ObjectId
-    ref: "ShirtModel", // Reference the "Shirt" model
-    required: true 
-  }],
+  shirt: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ShirtModel",
+      required: true,
+    },
+  ],
   orderConfirmation: { type: Boolean, required: true },
   deliveryStatus: {
     type: String,
     enum: ["pending", "shipped", "delivered"],
-    required : true,
     default: "pending",
+    required: true,
   },
-  price: { 
-    base: {
-      type: Number,
-      required: true,
-    },
-    discount: {
-      type: Number,
-      required: true,
-    },
-    delivaryCost: {
-      type: Number,
-      required: true,
-    },
-    total: {
-      type: Number,
-      required: true,
-    },
-   },
+  price: {
+    base: { type: Number, required: true },
+    discount: { type: Number, required: true },
+    deliveryCost: { type: Number, required: true },
+    total: { type: Number, required: true },
+  },
   paymentMethod: {
     type: String,
     enum: ["credit_card", "debit_card", "paypal", "cash_on_delivery"],
-    required : true,
+    required: true,
   },
   paymentTime: { type: Date, required: true },
-  receipt: { type: String, required: true }, // Link to the receipt PDF
+  receipt: { type: String, required: true },
   orderAddress: {
-      phoneNumber: {
-        type: String,
-      },
-      address1: {
-        type: String,
-      },
-      address2: {
-        type: String,
-      },
-      city: {
-        type: String,
-      },
-      state: {
-        type: String,
-      },
-      zipCode: {
-        type: String,
-      },
-      country: {
-        type: String,
-      },
-      active: {
-        type: Boolean,
-        default: true,
-      },
+    phoneNumber: { type: String, required: true },
+    address1: { type: String, required: true },
+    address2: { type: String, required: true },
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    zipCode: { type: String, required: true },
+    country: { type: String, required: true },
+    active: { type: Boolean, default: true },
   },
+},
+{
+  timestamps: true,
 });
-const OrderModel = mongoose.model<Order>("Order", OrderSchema);
 
+const OrderModel = mongoose.models.Order || mongoose.model<Order>("Order", OrderSchema);
 export default OrderModel;
