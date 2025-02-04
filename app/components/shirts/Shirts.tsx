@@ -45,7 +45,7 @@ const Shirts = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto p-4">
+    <div className="max-w-7xl mx-auto p-4" id="about">
       <h1 className="text-4xl text-[#646464] font-bold font-play mb-10 text-center">
         Discover New Shirts
       </h1>

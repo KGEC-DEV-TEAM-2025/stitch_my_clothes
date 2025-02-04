@@ -1,52 +1,55 @@
-import connectToDatabase from "@/lib/database/connect";
+"use server"
 
-import ShirtModel from "@/lib/database/models/shirtModel/ShirtModel";
+import { connectToDatabase } from "@/lib/database/connect";
+import { ShirtModel } from "@/lib/database/models/shirtModel/ShirtModel";
 import mongoose from "mongoose";
+
+interface ProductItem {
+  name: string;
+  image: string;
+  price: number;
+}
 
 export const createShirt = async (
   price: number,
-  bottom: object, // Now expecting object
-  back: object, // Now expecting object
-  sleeves: object, // Now expecting object
-  cuffstyle: object, // Now expecting object
-  cufflinks: object, // Now expecting object
-  collarstyle: object, // Now expecting object
-  collarheight: object, // Now expecting object
-  collarbutton: object, // Now expecting object
-  placket: object, // Now expecting object
-  pocket: object, // Now expecting object
-  fit: object, // Now expecting object
-  watchCompatible: boolean, // Boolean value
-  colorId: string, // Color ID (MongoDB Object ID)
-  fabricId: string, // Fabric ID (MongoDB Object ID)
+  bottom: ProductItem,
+  back: ProductItem,
+  sleeves: ProductItem,
+  cuffStyle: ProductItem,
+  cuffLinks: ProductItem,
+  collarStyle: ProductItem,
+  collarHeight: ProductItem,
+  collarButton: ProductItem,
+  placket: ProductItem,
+  pocket: ProductItem,
+  fit: ProductItem,
+  watchCompatible: boolean,
+  colorId: string,
+  fabricId: string
 ) => {
   try {
-    // Convert the incoming string IDs into MongoDB ObjectIds
+    await connectToDatabase();
+
     const fabricObjectId = new mongoose.Types.ObjectId(fabricId);
     const colorObjectId = new mongoose.Types.ObjectId(colorId);
 
-    // Create the shirt document
-    const newShirt = new ShirtModel({
-      name,
+    const newShirt = await new ShirtModel({
       price,
       bottom,
       back,
       sleeves,
-      cuffstyle,
-      cufflinks,
-      collarstyle,
-      collarheight,
-      collarbutton,
+      cuffStyle,
+      cuffLinks,
+      collarStyle,
+      collarHeight,
+      collarButton,
       placket,
       pocket,
       fit,
-      watchCompatible, // Boolean field
+      watchCompatible,
       colorId: colorObjectId,
       fabricId: fabricObjectId,
-    });
-
-    // Save the shirt to the database
-    await newShirt.save();
+    }).save();
 
     return {
       message: "Shirt created successfully.",
@@ -54,11 +57,10 @@ export const createShirt = async (
       shirt: newShirt,
     };
   } catch (error: any) {
-    console.log(error);
+    console.error(error);
     return {
       message: "Error creating shirt.",
       success: false,
     };
   }
 };
-

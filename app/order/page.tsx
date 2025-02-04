@@ -1,6 +1,7 @@
 import { Button } from "@/app/components/ui/button";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { PayPalButton } from "../components/PayPal/PayPalButton";
 
 const OrderPage = () => {
   return (

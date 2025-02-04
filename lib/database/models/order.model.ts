@@ -16,7 +16,12 @@ export interface Order extends Document {
     ],
   orderConfirmation: boolean;
   deliveryStatus: "pending" | "shipped" | "delivered";
-  price: number;
+  price: {
+    base: number;
+    discount: number;
+    delivaryCost: number;
+    total: number;
+  };
   deliveryCost: number;
   paymentMethod: "credit_card" | "debit_card" | "paypal" | "cash_on_delivery";
   paymentTime: Date;
@@ -47,8 +52,24 @@ export const OrderSchema = new Schema<Order>({
     required : true,
     default: "pending",
   },
-  price: { type: Number, required: true },
-  deliveryCost: { type: Number, required: true },
+  price: { 
+    base: {
+      type: Number,
+      required: true,
+    },
+    discount: {
+      type: Number,
+      required: true,
+    },
+    delivaryCost: {
+      type: Number,
+      required: true,
+    },
+    total: {
+      type: Number,
+      required: true,
+    },
+   },
   paymentMethod: {
     type: String,
     enum: ["credit_card", "debit_card", "paypal", "cash_on_delivery"],

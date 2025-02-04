@@ -74,8 +74,8 @@ interface Cuff {
 
 // Define the main ProductData interface
 interface ProductData {
-  backs: any[];
-  bottoms: any[];
+  back: any[];
+  bottom: any[];
   // collars: {
   //   collarStyle: any[];
   //   collarHeight: any[];
@@ -90,16 +90,16 @@ interface ProductData {
   // };
   cuffStyle: any[];
   cuffLinks: any[];
-  fits: any[];
-  plackets: any[];
-  pockets: any[];
+  fit: any[];
+  placket: any[];
+  pocket: any[];
   sleeves: any[];
 }
 
 const useProductData = () => {
   const [data, setData] = useState<ProductData>({
-    backs: [],
-    bottoms: [],
+    back: [],
+    bottom: [],
     // collars: {
     //   collarStyle: [],
     //   collarHeight: [],
@@ -114,9 +114,9 @@ const useProductData = () => {
     // },
     cuffStyle: [],
     cuffLinks: [],
-    fits: [],
-    plackets: [],
-    pockets: [],
+    fit: [],
+    placket: [],
+    pocket: [],
     sleeves: [],
   });
 
@@ -131,13 +131,13 @@ const useProductData = () => {
         setLoading(true);
         try {
           const [
-            backs,
-            bottoms,
-            collars,
-            cuffs,
-            fits,
-            plackets,
-            pockets,
+            back,
+            bottom,
+            collar,
+            cuff,
+            fit,
+            placket,
+            pocket,
             sleeves,
           ] = await Promise.all([
             getBacksByColorAndFabric(fabricId, colorId),
@@ -151,22 +151,22 @@ const useProductData = () => {
           ]);
 
           // Extracting different categories for Collar and Cuff
-          const collarStyle = collars?.map((collar: Collar) => collar.style);
-          const collarHeight = collars?.map((collar: Collar) => ({
+          const collarStyle = collar?.map((collar: Collar) => collar.style);
+          const collarHeight = collar?.map((collar: Collar) => ({
             ...collar.height,
             _id: collar._id,
           }));
-          const collarButton = collars?.map((collar: Collar) => ({
+          const collarButton = collar?.map((collar: Collar) => ({
             ...collar.collar_button,
             _id: collar._id, // Assigning collar's id to collarButton
           }));
 
-          const cuffStyle = cuffs?.map((cuff: Cuff) => cuff.style);
-          const cuffLinks = cuffs?.map((cuff: Cuff) => cuff.cufflinks);
+          const cuffStyle = cuff?.map((cuff: Cuff) => cuff.style);
+          const cuffLinks = cuff?.map((cuff: Cuff) => cuff.cufflinks);
 
           setData({
-            backs,
-            bottoms,
+            back,
+            bottom,
             // collars: { collarStyle, collarHeight, collarButton },
             collarStyle,
             collarHeight,
@@ -174,9 +174,9 @@ const useProductData = () => {
             // cuffs: { cuffStyle, cuffLinks },
             cuffStyle,
             cuffLinks,
-            fits,
-            plackets,
-            pockets,
+            fit,
+            placket,
+            pocket,
             sleeves,
           });
         } catch (error) {

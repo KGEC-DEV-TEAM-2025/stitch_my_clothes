@@ -120,7 +120,7 @@ const BodyMeasurementsForm: React.FC<BodyMeasurementsFormProps> = ({ initialMeas
 
   return (
     <div className="rounded-lg p-8 space-y-14">
-      <h2 className="text-4xl text-center font-bold">Shirt Measurements</h2>
+      <h2 className="text-4xl text-center font-bold">Body Measurements</h2>
       <div className="flex gap-x-10">
         <div className="flex flex-col w-1/2 space-y-2">
           {renderMeasurementFields()}
