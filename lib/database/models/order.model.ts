@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface Order extends Document {
+  user: string; // user phone number
   shirt: mongoose.Types.ObjectId[]; // multiple shirt items referenced
 
   orderConfirmation: boolean;
@@ -27,6 +28,7 @@ export interface Order extends Document {
 }
 
 export const OrderSchema = new Schema<Order>({
+  user: { type: String, required: true },
   shirt: [
     {
       type: mongoose.Schema.Types.ObjectId,

@@ -52,6 +52,5 @@ export const OrderSchema = new Schema<Order>({
     phoneNumber: { type: String, required: true },
   },
 });
-const OrderModel = mongoose.model<Order>("Order", OrderSchema);
-
+const OrderModel = mongoose.models.Order || mongoose.model<Order>("Order", OrderSchema);
 export default OrderModel;
