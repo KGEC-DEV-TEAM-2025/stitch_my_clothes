@@ -3,11 +3,7 @@
 import React, { useState } from "react";
 import ShirtMeasurementsForm from "../components/shirtMeasurement/ShirtMeasurementsForm";
 import BodyMeasurementsForm from "../components/bodyMeasurement/BodyMeasurementsForm";
-import {
-  Measurement,
-  ShirtMeasurements,
-  BodyMeasurements,
-} from "@/app/utils/data/measurement"; // Import correct types
+import { Measurement, ShirtMeasurements, BodyMeasurements } from "@/app/utils/data/measurement";
 import { createMeasurement } from "@/lib/database/actions/measurement.actions";
 import { toast } from "sonner";
 
@@ -18,18 +14,14 @@ const Page = () => {
 
   const handleShirtMeasurementsChange = (measurements: ShirtMeasurements) => {
     setShirtMeasurements(measurements);
-    console.log("Shirt Measurements:", measurements);
   };
 
   const handleBodyMeasurementsChange = (measurements: BodyMeasurements) => {
     setBodyMeasurements(measurements);
-    console.log("Body Measurements:", measurements);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate that shirt measurements include required fields (collar and cuff)
+  const handleSave = async () => {
+    // Validate measurements
     if (!shirtMeasurements || shirtMeasurements.collar === undefined || shirtMeasurements.cuff === undefined) {
       toast("Please fill in your shirt measurements, including both collar and cuff details.");
       return;
@@ -44,7 +36,6 @@ const Page = () => {
       shirt: shirtMeasurements,
       body: bodyMeasurements,
     };
-    console.log("Combined Measurements:", combinedMeasurements);
 
     try {
       setIsSubmitting(true);
@@ -60,19 +51,20 @@ const Page = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="pt-28 px-4 py-2">
-      <div>
-        <ShirtMeasurementsForm onChange={handleShirtMeasurementsChange} />
-      </div>
-      <div>
-        <BodyMeasurementsForm onChange={handleBodyMeasurementsChange} />
-      </div>
+    <div className="pt-28 px-4 py-2">
+      <ShirtMeasurementsForm onChange={handleShirtMeasurementsChange} />
+      <BodyMeasurementsForm onChange={handleBodyMeasurementsChange} />
       <div className="flex items-center justify-center">
-        <button type="submit" disabled={isSubmitting} className="bg-[#c40600] px-4 py-2 text-white rounded-lg font-semibold">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={isSubmitting}
+          className="bg-[#c40600] px-4 py-2 text-white rounded-lg font-semibold"
+        >
           {isSubmitting ? "Saving..." : "Save Measurements"}
         </button>
       </div>
-    </form>
+    </div>
   );
 };
 

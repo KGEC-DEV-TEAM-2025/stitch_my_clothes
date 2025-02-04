@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import connectToDatabase from "../connect";
+import {connectToDatabase} from "../connect";
 import Cart from "../models/cart.model";
 import Coupon from "../models/coupon.model";
 import Order from "../models/order.model";
