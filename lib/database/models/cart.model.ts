@@ -37,6 +37,7 @@ const cartSchema = new mongoose.Schema(
       unique: true, // one cart per user
       index: true,
     },
+
   },
   {
     timestamps: true,

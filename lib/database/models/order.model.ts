@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface Order extends Document {
   shirt: mongoose.Types.ObjectId[]; // multiple shirt items referenced
+
   orderConfirmation: boolean;
   deliveryStatus: "pending" | "shipped" | "delivered";
   price: {

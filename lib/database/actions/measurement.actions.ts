@@ -28,7 +28,6 @@ export async function createMeasurement(measurements: any) {
         await measurement.save();
         
         return {
-            id: measurement._id,
             message: "Measurements created successfully",
             success: true
         };
