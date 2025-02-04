@@ -42,9 +42,9 @@ const DiverseShirt = () => {
               <Image
                 src={fabric.src}
                 alt={fabric.alt}
-                width={500}
-                height={500}
-                className="object-cover w-full h-full"
+                width={1200}
+                height={1200}
+                className="object-cover w-full h-[250px]"
               />
          
           </div>

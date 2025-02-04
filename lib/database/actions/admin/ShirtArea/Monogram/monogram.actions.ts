@@ -1,4 +1,4 @@
-import { connectToDatabase } from "@/lib/database/connect";
+import connectToDatabase from "@/lib/database/connect";
 import MonogramModel from "@/lib/database/models/shirtModel/MonogramModel";
 import cloudinary from "cloudinary";
 import mongoose from "mongoose";

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 // Importing UI components from custom UI library and icons from Lucide
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
@@ -15,6 +15,11 @@ import {
   CreditCardIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
+import { saveAddress } from "@/lib/database/actions/user.actions";
+import { toast } from "sonner"
+import { PayPalButton } from "../components/PayPal/PayPalButton";
+import { useRouter } from "next/navigation";
 
 /**
  * Type for the steps in the checkout process, including title and icon.
@@ -82,6 +87,35 @@ const orderItems: OrderItems[] = [
  * It includes multi-step navigation (delivery address, coupon, payment) and an order summary.
  */
 const CheckoutPage = () => {
+
+  const { isSignedIn, user, isLoaded } = useUser();
+  const router = useRouter();
+
+  const [deliveryAddress, setDeliveryAddress] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedAddress = localStorage.getItem("deliveryAddress");
+      return savedAddress ? JSON.parse(savedAddress) : {
+        phoneNumber: "",
+        address1: "",
+        address2: "",
+        city: "",
+        state: "",
+        country: "",
+        zipCode: ""
+      };
+    }
+    return {
+      phoneNumber: "",
+      address1: "",
+      address2: "",
+      city: "",
+      state: "",
+      country: "",
+      zipCode: ""
+    };
+  });
+
+
   // State to track the current step of the checkout process
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -104,7 +138,32 @@ const CheckoutPage = () => {
    * Handle the "Next" button click to proceed to the next step in the checkout process.
    * Ensures that the current step is not beyond the last step.
    */
+
+  // useEffect(() => {
+  //   // Fetch saved address from database when component mounts
+  //   const fetchAddress = async () => {
+  //     if (isSignedIn && user) {
+  //       try {
+  //         const address = await getUserAddress(user.id);
+  //         if (address) {
+  //           setDeliveryAddress(address);
+  //           // Clear localStorage as we have a database address
+  //           localStorage.removeItem("deliveryAddress");
+  //         }
+  //       } catch (error) {
+  //         console.error("Failed to fetch address:", error);
+  //       }
+  //     }
+  //   };
+
+  if (!isSignedIn) {
+    return <div>Sign in to view this page</div>
+  } else {
+
+  }
+
   const handleNext = () => {
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -118,6 +177,32 @@ const CheckoutPage = () => {
       setCurrentStep(currentStep - 1);
     }
   };
+
+  const handleSaveAddress = async () => {
+    try {
+      const response = await saveAddress(deliveryAddress, user.id);
+      console.log(response)
+      if (response.success) {
+        toast(response.message)
+      }
+    } catch (error: any) {
+      throw new Error(error);
+    }
+    finally {
+      handleNext();
+    }
+  }
+
+  const handleConfirmPayment = () => {
+    if (paymentMethod === "paypal") {
+      router.push("/checkout/paypal");
+    } else {
+      // Keep existing flow for other payment methods if any.
+      handleNext();
+    }
+  };
+
+
 
   return (
     <div className="container mx-auto pt-36">
@@ -134,11 +219,10 @@ const CheckoutPage = () => {
               >
                 {/* Step indicator circle with icon */}
                 <div
-                  className={`rounded-full p-2 ${
-                    index <= currentStep
+                  className={`rounded-full p-2 ${index <= currentStep
                       ? "bg-primary text-primary-foreground"
                       : "bg-secondary text-secondary-foreground"
-                  }`}
+                    }`}
                 >
                   {index < currentStep ? (
                     <CheckIcon className="h-5 w-5" />
@@ -149,11 +233,10 @@ const CheckoutPage = () => {
                 {/* Step title */}
                 <div className="ml-0 lg:ml-4 lg:mr-8 text-center lg:text-left">
                   <p
-                    className={`text-sm font-medium ${
-                      index <= currentStep
+                    className={`text-sm font-medium ${index <= currentStep
                         ? "text-primary"
                         : "text-secondary-foreground"
-                    }`}
+                      }`}
                   >
                     {step.title}
                   </p>
@@ -178,7 +261,7 @@ const CheckoutPage = () => {
               {currentStep === 0 && (
                 <div className="space-y-4">
                   {/* Form for inputting the delivery address */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="firstName">First Name</Label>
                       <Input id="firstName" placeholder="First Name" />
@@ -187,28 +270,30 @@ const CheckoutPage = () => {
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input id="lastName" placeholder="Last Name" />
                     </div>
-                  </div>
+                  </div> */}
                   <div>
                     <Label htmlFor="phoneNumber">Phone Number</Label>
-                    <Input id="phoneNumber" placeholder="Phone Number" />
+                    <Input id="phoneNumber" placeholder="Phone Number" value={deliveryAddress.phoneNumber} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, phoneNumber: e.target.value })} />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="zipCode">Zip Code / Postal Code</Label>
                       <Input
                         id="zipCode"
-                        placeholder="Zip Code / Postal Code"
+                        placeholder="Zip Code / Postal Code" value={deliveryAddress.zipCode}
+                        onChange={(e) => setDeliveryAddress({ ...deliveryAddress, zipCode: e.target.value })
+                        }
                       />
                     </div>
                     <div>
                       <Label htmlFor="city">City</Label>
-                      <Input id="city" placeholder="City" />
+                      <Input id="city" placeholder="City" value={deliveryAddress.city} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, city: e.target.value })} />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="state">State</Label>
-                      <Input id="state" placeholder="State" />
+                      <Input id="state" placeholder="State" value={deliveryAddress.state} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, state: e.target.value })} />
                     </div>
                     <div>
                       <Label htmlFor="country">Country</Label>
@@ -216,19 +301,20 @@ const CheckoutPage = () => {
                         id="country"
                         placeholder="Country"
                         defaultValue="India"
+                        value={deliveryAddress.country} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, country: e.target.value })}
                       />
                     </div>
                   </div>
                   <div>
                     <Label htmlFor="address1">Address 1</Label>
-                    <Input id="address1" placeholder="Address 1" />
+                    <Input id="address1" placeholder="Address 1" value={deliveryAddress.address1} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, address1: e.target.value })} />
                   </div>
                   <div>
                     <Label htmlFor="address2">Address 2</Label>
-                    <Input id="address2" placeholder="Address 2" />
+                    <Input id="address2" placeholder="Address 2" value={deliveryAddress.address2} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, address2: e.target.value })} />
                   </div>
-                  <Button className="w-full bg-[#c40600] text-white" onClick={handleNext}>
-                    Save Address
+                  <Button className="w-full bg-[#c40600] text-white" onClick={handleSaveAddress}>
+                    Save Address And Continue
                   </Button>
                 </div>
               )}
@@ -272,12 +358,18 @@ const CheckoutPage = () => {
                         <RadioGroupItem value="net_banking" id="net_banking" />
                         <Label htmlFor="net_banking">Net Banking</Label>
                       </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="paypal" id="paypal" />
+                        <Label htmlFor="paypal">PayPal</Label>
+                      </div>
                     </div>
                   </RadioGroup>
                   <Button className="w-full bg-[#c40600] text-white" onClick={handleNext}>
                     Confirm Payment Method
                   </Button>
-                  <Button className="w-full bg-[#c40600] text-white" asChild>
+                  <Button className="w-full bg-[#c40600] text-white"
+                          onClick={handleConfirmPayment}
+                          asChild>
                     <Link href="/order">Place Order</Link>
                   </Button>
                 </div>

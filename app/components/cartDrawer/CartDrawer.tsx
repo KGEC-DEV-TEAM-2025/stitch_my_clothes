@@ -42,7 +42,7 @@ const CartDrawer = () => {
       price: 1615,
       quantity: 4,
       image:
-        "/g1.jpg",
+        "/archive/relaxed-young-man-with-checkered-shirt-posing-2021-08-26-23-05-04-utc.jpg",
     },
     {
       id: "2",
@@ -50,7 +50,7 @@ const CartDrawer = () => {
       price: 2300,
       quantity: 4,
       image:
-        "/g2.webp",
+        "/archive/shirts-2022-11-10-08-14-58-utc.jpg",
     },
   ]);
   const removeItem = (id: string) => {

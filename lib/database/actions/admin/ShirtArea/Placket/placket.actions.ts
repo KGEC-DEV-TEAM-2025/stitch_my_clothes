@@ -1,6 +1,6 @@
 "use server";
 
-import { connectToDatabase } from "@/lib/database/connect";
+import connectToDatabase from "@/lib/database/connect";
 import PlacketModel from "@/lib/database/models/shirtModel/PlacketModel";
 import cloudinary from "cloudinary";
 import mongoose from "mongoose";

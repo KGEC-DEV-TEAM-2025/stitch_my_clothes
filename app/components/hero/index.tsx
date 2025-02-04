@@ -12,8 +12,8 @@ export default function Hero() {
           key={e.id}
           alt={e.alt}
             className="w-full lg:w-1/3 h-full object-cover"
-            width={300}
-            height={300}
+            width={1000}
+            height={1000}
           />
         ))}
       </div>
@@ -35,7 +35,7 @@ export default function Hero() {
             your custom shirt today. Experience the satisfaction of wearing a
             garment that is uniquely yours.{" "}
           </p>
-          <Link href={'/fabric'}>
+          <Link href={'/fabric-new'}>
           <button className="bg-[#C40600] mt-6 text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-800 transition duration-300">
             
             Start Designing

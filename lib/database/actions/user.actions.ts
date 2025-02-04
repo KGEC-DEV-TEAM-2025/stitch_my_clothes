@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { connectToDatabase } from "../connect";
+import connectToDatabase from "../connect";
 import Cart from "../models/cart.model";
 import Coupon from "../models/coupon.model";
 import Order from "../models/order.model";
@@ -143,24 +143,25 @@ export async function deleteAddress(id: any, user_id: any) {
 }
 export async function saveAddress(address: any, user_id: any) {
   try {
+    await connectToDatabase();
     // Find the user by user_id
-    const user = await User.findById(user_id);
+    const user = await User.findOne({ clerkId: user_id });
 
     if (!user) {
+      console.log("User not found");
       return "User not found";
+    }else{
+      console.log(user)
     }
 
-    // Check if 'address' property exists and is an array, if not, create it
-    if (!user.address || !Array.isArray(user.address)) {
-      user.address = [];
-    }
+    console.log(address.phoneNumber)
 
-    // Use the push method to add the address to the 'address' array
-    Object.assign(user.address, address);
+    const updatedUser = await User.findOneAndUpdate({clerkId : user_id},{
+      address : address
+    }, {new: true});
+    console.log(updatedUser)
 
-    // Save the updated user
-    await user.save();
-    return JSON.parse(JSON.stringify({ addresses: user.address }));
+    return JSON.parse(JSON.stringify({ address: updatedUser.address, message : "Address saved successfully" , success: true}));
   } catch (error:any) {
     throw new Error(error);
   }
@@ -193,28 +194,28 @@ export async function applyCoupon(coupon: any, user_id: any) {
   } catch (error) {}
 }
 
-// get all orders of user for their profile:
-export async function getAllUserOrdersProfile(clerkId: string) {
-  try {
-    await connectToDatabase();
-    let user = await User.findOne({ clerkId });
+// // get all orders of user for their profile:
+// export async function getAllUserOrdersProfile(clerkId: string) {
+//   try {
+//     await connectToDatabase();
+//     let user = await User.findOne({ clerkId });
 
-    let orders = [];
-    orders = await Order.find({ user: user._id })
-      .sort({ createdAt: -1 })
-      .lean();
-    const filteredOrders = orders.map((order) => ({
-      id: order._id,
-      date: new Date(order.createdAt).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
-      total: order.total,
-    }));
+//     let orders = [];
+//     orders = await Order.find({ user: user._id })
+//       .sort({ createdAt: -1 })
+//       .lean();
+//     const filteredOrders = orders.map((order) => ({
+//       id: order._id,
+//       date: new Date(order.createdAt).toLocaleDateString("en-US", {
+//         month: "short",
+//         day: "numeric",
+//         year: "numeric",
+//       }),
+//       total: order.total,
+//     }));
 
-    return JSON.parse(JSON.stringify(filteredOrders));
-  } catch (error) {
-    console.log(error);
-  }
-}
+//     return JSON.parse(JSON.stringify(filteredOrders));
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }

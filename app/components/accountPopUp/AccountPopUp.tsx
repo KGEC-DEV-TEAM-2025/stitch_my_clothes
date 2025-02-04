@@ -14,29 +14,49 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/ta
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
   DialogTrigger,
 } from "@/app/components/ui/dialog";
 import { useAtom, useStore } from "jotai";
 import { accountMenuState } from "@/app/utils/data/store";
 import { useEffect, useState } from "react";
-import { useSignIn, useSignUp } from "@clerk/nextjs";
+import { useClerk, useSignIn, useSignUp } from "@clerk/nextjs";
 import { toast } from "sonner";
+import Image from "next/image";
+import { useUser } from "@clerk/nextjs";
+
+// Define type for form data to improve type safety
+interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  whatsapp: string;
+  password: string;
+  country: string;
+  zipCode: string;
+}
 
 const AccountPopUp = () => {
   const [showVerificationDialog, setShowVerificationDialog] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useAtom(accountMenuState, {
     store: useStore(),
   });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isSignup, setIsSignup] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [hasShownPopup, setHasShownPopup] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [pendingVerification, setPendingVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
-  const [formData, setFormData] = useState({
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
     whatsapp: "",
+    password: "",
     country: "",
     zipCode: "",
   });
@@ -44,21 +64,28 @@ const AccountPopUp = () => {
   const { isLoaded: isSignUpLoaded, signUp, setActive } = useSignUp();
   const { isLoaded: isSignInLoaded, signIn, setActive: setSignInActive } = useSignIn();
 
+  const { isLoaded, isSignedIn } = useUser();
+  const { signOut } = useClerk();
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+
   useEffect(() => {
     const popupShown = localStorage.getItem('popupShown');
     if (popupShown) {
       setHasShownPopup(true);
+      return;
     }
 
-    const timeoutId = setTimeout(() => {
-      setAccountMenuOpen(true);
-      localStorage.setItem('popupShown', 'true');
-      setHasShownPopup(true);
-    }, 5000);
-    return () => clearTimeout(timeoutId);
-  }, []);
+    if (!isSignedIn) {
+      const timeoutId = setTimeout(() => {
+        setAccountMenuOpen(true);
+        localStorage.setItem("popupShown", "true");
+        setHasShownPopup(true);
+      }, 5000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [setAccountMenuOpen, isSignedIn]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -70,19 +97,28 @@ const AccountPopUp = () => {
     if (!isSignUpLoaded) return;
 
     try {
+
       const result = await signUp.create({
+        emailAddress: formData.email,
+        password: formData.password,
         firstName: formData.firstName,
         lastName: formData.lastName,
-        emailAddress: formData.email,
-        phoneNumber: formData.phone,
+        unsafeMetadata: {
+          phone: formData.phone,
+          whatsapp: formData.whatsapp,
+          country: formData.country,
+          zipCode: formData.zipCode
+        }
       });
 
+      // Prepare email verification
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-      
+
       setPendingVerification(true);
       setShowVerificationDialog(true);
       setAccountMenuOpen(false);
-    } catch (err) {
+
+    } catch (err: any) {
       toast.error("Error during sign up: " + err.message);
     }
   };
@@ -101,7 +137,8 @@ const AccountPopUp = () => {
         setAccountMenuOpen(false);
         toast.success("Successfully signed in!");
       }
-    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
       toast.error("Error during sign in: " + err.message);
     }
   };
@@ -117,39 +154,88 @@ const AccountPopUp = () => {
       if (completeSignUp.status === "complete") {
         await setActive({ session: completeSignUp.createdSessionId });
         setShowVerificationDialog(false);
+
+        // Additional user metadata can be added via your backend webhook
         toast.success("Email verified successfully!");
       }
-    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
       toast.error("Error during verification: " + err.message);
     }
   };
 
   const handleOnClickAccountMenu = () => {
-    setAccountMenuOpen(true);
+    if (isLoaded && isSignedIn) {
+      setLogoutDialogOpen(true);
+    } else {
+      setAccountMenuOpen(true);
+    }
   };
+
+
 
   return (
     <div>
-      <Dialog open={accountMenuOpen} onOpenChange={setAccountMenuOpen}>
+      {/* <Dialog open={accountMenuOpen} onOpenChange={setAccountMenuOpen}>
         <DialogTrigger asChild>
-          <button onClick={handleOnClickAccountMenu} className="lg:flex">
-            Login
-          </button>
+          <div className="relative"> */}
+            <button
+              onClick={handleOnClickAccountMenu}
+              className="lg:flex relative"
+            >
+              {isSignedIn ? "Account" : "Login"}
+            </button>
+          {/* </div>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+      </Dialog> */}
+
+      {/* Updated Logout Dialog */}
+      <Dialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
+        <DialogContent>
+          <DialogTitle>Log Out</DialogTitle>
           <Card>
-            <Tabs defaultValue="sign up">
+            <CardHeader className="px-6 py-4">
+              <h3 className="text-lg font-medium">Log Out</h3>
+              <p className="text-sm text-muted-foreground">
+                Are you sure you want to log out?
+              </p>
+            </CardHeader>
+            <CardFooter className="flex justify-end gap-3 px-6 py-4">
+              <Button variant="default" className="w-24" onClick={() => setLogoutDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                className="w-24"
+                onClick={() => {
+                  setLogoutDialogOpen(false);
+                  signOut();
+                }}
+              >
+                Log Out
+              </Button>
+            </CardFooter>
+          </Card>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={accountMenuOpen} onOpenChange={setAccountMenuOpen}>
+        <DialogContent className="sm:max-w-[725px] flex">
+          <Card className="space-y-3">
+            <Tabs defaultValue="signup">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signup" className="font-bold bg-[#c40600] text-white" onClick={() => setIsSignup(true)}>
+
+                <TabsTrigger value="signup" className="font-bold data-[state=active]:bg-[#c40600] data-[state=active]:text-white" onClick={() => setIsSignup(true)}>
                   Discount-Sign Up
                 </TabsTrigger>
-                <TabsTrigger value="login" className="font-bold bg-[#c40600] text-white" onClick={() => setIsSignup(false)}>sign in</TabsTrigger>
+                <TabsTrigger value="login" className="font-bold data-[state=active]:bg-[#c40600] data-[state=active]:text-white" onClick={() => setIsSignup(false)}>sign in</TabsTrigger>
+
               </TabsList>
               <TabsContent value="login">
                 <CardHeader>
-                  <CardTitle className="font-bold">Sign in</CardTitle>
+                  <CardTitle className="font-bold">Sign In</CardTitle>
                   <CardDescription>
-                    Enter your credentials to access your account.
+                    Enter your credentials to access your account
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -176,8 +262,12 @@ const AccountPopUp = () => {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit" className="w-full bg-[#c40600]" onClick={handleLoginSubmit}>
-                    Sign in
+                  <Button
+                    type="submit"
+                    className="w-full bg-[#c40600]"
+                    onClick={handleLoginSubmit}
+                  >
+                    Sign In
                   </Button>
                 </CardFooter>
               </TabsContent>
@@ -185,7 +275,7 @@ const AccountPopUp = () => {
                 <CardHeader>
                   <CardTitle>Sign Up</CardTitle>
                   <CardDescription>
-                    Create a new account to get started.
+                    Create a new account to get started
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -223,6 +313,16 @@ const AccountPopUp = () => {
                     />
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="password-signup" className="font-bold">Password</Label>
+                    <Input
+                      id="password-signup"
+                      name="password"
+                      type="password"
+                      required
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="phone" className="font-bold">Phone</Label>
                     <Input
                       id="phone"
@@ -230,6 +330,16 @@ const AccountPopUp = () => {
                       type="tel"
                       placeholder="+1234567890"
                       required
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="whatsapp" className="font-bold">WhatsApp</Label>
+                    <Input
+                      id="whatsapp"
+                      name="whatsapp"
+                      type="tel"
+                      placeholder="+1234567890"
                       onChange={handleInputChange}
                     />
                   </div>
@@ -257,13 +367,24 @@ const AccountPopUp = () => {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit" className="w-full bg-[#c40600]" onClick={handleSignupSubmit}>
+                  <Button
+                    type="submit"
+                    className="w-full bg-[#c40600]"
+                    onClick={handleSignupSubmit}
+                  >
                     Sign Up
                   </Button>
                 </CardFooter>
               </TabsContent>
             </Tabs>
           </Card>
+          <div className="space-y-10 flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center justify-center space-y-2 pt-4 px-2">
+              <h1 className="sm:text-4xl text-2xl font-bold text-[#646464]">GET 25% OFF</h1>
+              <p className="text-md font-semibold text-center">shop at stich my clothes and get discounts.</p>
+            </div>
+            <Image src={'/archive/stylish-groom-getting-ready-in-morning-putting-on-2021-08-29-11-41-08-utc.JPG'} alt="login" className="object-cover" width={400} height={100} />
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -273,7 +394,7 @@ const AccountPopUp = () => {
             <CardHeader>
               <CardTitle>Email Verification</CardTitle>
               <CardDescription>
-                Enter the verification code sent to your email.
+                Enter the verification code sent to your email
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -281,25 +402,29 @@ const AccountPopUp = () => {
                 <Label htmlFor="verification-code" className="font-bold">
                   Verification Code
                 </Label>
-                <Input 
-                  id="verification-code" 
-                  name="verification-code" 
-                  type="text" 
-                  required 
+                <Input
+                  id="verification-code"
+                  name="verification-code"
+                  type="text"
+                  required
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value)}
                 />
               </div>
             </CardContent>
             <CardFooter>
-              <Button type="submit" className="w-full bg-[#c40600]" onClick={handleVerification}>
+              <Button
+                type="submit"
+                className="w-full bg-[#c40600]"
+                onClick={handleVerification}
+              >
                 Verify Email
               </Button>
             </CardFooter>
           </Card>
         </DialogContent>
       </Dialog>
-    </div>
+    </div >
   );
 };
 

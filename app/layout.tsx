@@ -3,7 +3,7 @@ import "./globals.css";
 import Navbar from "./components/Navbar/Navbar";
 import Preloader from "./components/Preloader";
 import localFont from 'next/font/local'
-import { Toaster } from 'sonner';
+import { Toaster } from "@/components/ui/sonner"
 
 // In your layout
 <Toaster />

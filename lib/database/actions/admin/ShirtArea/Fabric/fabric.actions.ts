@@ -1,6 +1,6 @@
 "use server";
 
-import { connectToDatabase } from "@/lib/database/connect";
+import  connectToDatabase  from "@/lib/database/connect";
 import FabricModel from "@/lib/database/models/shirtModel/FabricModel";
 import cloudinary from "cloudinary";
 
