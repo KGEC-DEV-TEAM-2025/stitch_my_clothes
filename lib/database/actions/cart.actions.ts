@@ -104,3 +104,17 @@ export async function updateCartForUser(products: any) {
 
   }
 }
+
+export async function beforeAddToCart(){
+  
+}
+
+export async function addToCart(item :any, clerkId : any){
+  try {
+    await connectToDatabase();
+    const cartitem = await Cart.findOne({user: clerkId});
+
+  } catch (error) {
+    
+  }
+}

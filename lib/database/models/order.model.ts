@@ -1,11 +1,19 @@
 import mongoose, { Schema, Document } from "mongoose";
-import ShirtModel from "./shirtModel/ShirtModel";
 
 export interface Order extends Document {
-  shirt:[{
-    type : mongoose.Types.ObjectId;
-    ref: "ShirtModel";
-  }]// Reference to the Shirt _id
+  products: [
+      {
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "ShirtModel",
+        },
+        qty: {
+          type: String,
+        },
+        price: Number,
+        priceAfterDiscount: Number,
+      },
+    ],
   orderConfirmation: boolean;
   deliveryStatus: "pending" | "shipped" | "delivered";
   price: number;
