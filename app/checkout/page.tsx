@@ -1,25 +1,19 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { CheckIcon, MapPinIcon, TicketIcon, CreditCardIcon } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
+import { Button } from "@/app/components/ui/button";
+import toast from "react-toast";
+// import { saveAddress } from "@/lib/api/address";
 
 // Importing UI components from custom UI library and icons from Lucide
-import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/app/components/ui/radio-group";
-import { Button } from "@/app/components/ui/button";
-import {
-  CheckIcon,
-  MapPinIcon,
-  TicketIcon,
-  CreditCardIcon,
-} from "lucide-react";
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
-import { saveAddress } from "@/lib/database/actions/user.actions";
-import { toast } from "sonner"
-import { PayPalButton } from "../components/PayPal/PayPalButton";
-import { useRouter } from "next/navigation";
 
 /**
  * Type for the steps in the checkout process, including title and icon.
@@ -31,6 +25,7 @@ type Steps = {
 };
 
 /**
+ * 
  * Array of steps to guide the user through the checkout process:
  * - Delivery Address
  * - Apply Coupon
@@ -87,7 +82,6 @@ const orderItems: OrderItems[] = [
  * It includes multi-step navigation (delivery address, coupon, payment) and an order summary.
  */
 const CheckoutPage = () => {
-
   const { isSignedIn, user, isLoaded } = useUser();
   const router = useRouter();
 
@@ -115,7 +109,6 @@ const CheckoutPage = () => {
     };
   });
 
-
   // State to track the current step of the checkout process
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -127,51 +120,41 @@ const CheckoutPage = () => {
 
   // Calculate subtotal by summing up the prices of all items in the cart
   const subtotal = orderItems.reduce((sum, item) => sum + item.price, 0);
-
   // Static discount value (this can be dynamically calculated based on coupon logic)
   const discount = 600;
-
   // Calculate total by subtracting the discount from the subtotal
   const total = subtotal - discount;
 
-  /**
-   * Handle the "Next" button click to proceed to the next step in the checkout process.
-   * Ensures that the current step is not beyond the last step.
-   */
+  // Fetch order summary from the API route
+  const [orderSummary, setOrderSummary] = useState<{ items: any[]; total: number } | null>(null);
+  useEffect(() => {
+    async function fetchOrderSummary() {
+      if (user) {
+        try {
+          const res = await fetch(`/api/order-summary?userId=${user.id}`);
+          const data = await res.json();
+          if (!data.error) {
+            setOrderSummary(data);
+          }
+        } catch (error) {
+          console.error("Error fetching order summary:", error);
+        }
+      }
+    }
+    if (isSignedIn) fetchOrderSummary();
+  }, [user, isSignedIn]);
 
-  // useEffect(() => {
-  //   // Fetch saved address from database when component mounts
-  //   const fetchAddress = async () => {
-  //     if (isSignedIn && user) {
-  //       try {
-  //         const address = await getUserAddress(user.id);
-  //         if (address) {
-  //           setDeliveryAddress(address);
-  //           // Clear localStorage as we have a database address
-  //           localStorage.removeItem("deliveryAddress");
-  //         }
-  //       } catch (error) {
-  //         console.error("Failed to fetch address:", error);
-  //       }
-  //     }
-  //   };
-
+  // Early return if the user is not signed in
   if (!isSignedIn) {
-    return <div>Sign in to view this page</div>
-  } else {
-
+    return <div>Sign in to view this page</div>;
   }
 
   const handleNext = () => {
-
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
 
-  /**
-   * Handle the "Back" button click to return to the previous step in the checkout process.
-   */
   const handlePrevious = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
@@ -179,19 +162,19 @@ const CheckoutPage = () => {
   };
 
   const handleSaveAddress = async () => {
-    try {
-      const response = await saveAddress(deliveryAddress, user.id);
-      console.log(response)
-      if (response.success) {
-        toast(response.message)
-      }
-    } catch (error: any) {
-      throw new Error(error);
-    }
-    finally {
-      handleNext();
-    }
-  }
+    console.log("hmm") // TODO: kuch to
+    // try {
+    //   const response = await saveAddress(deliveryAddress, user.id);
+    //   console.log(response);
+    //   if (response.success) {
+    //     toast(response.message);
+    //   }
+    // } catch (error: any) {
+    //   throw new Error(error);
+    // } finally {
+    //   handleNext();
+    // }
+  };
 
   const handleConfirmPayment = () => {
     if (paymentMethod === "paypal") {
@@ -201,8 +184,6 @@ const CheckoutPage = () => {
       handleNext();
     }
   };
-
-
 
   return (
     <div className="container mx-auto pt-36">
@@ -217,7 +198,6 @@ const CheckoutPage = () => {
                 key={index}
                 className="flex items-center mb-4 lg:mb-0 lg:flex-row flex-col lg:space-x-4"
               >
-                {/* Step indicator circle with icon */}
                 <div
                   className={`rounded-full p-2 ${index <= currentStep
                       ? "bg-primary text-primary-foreground"
@@ -230,7 +210,6 @@ const CheckoutPage = () => {
                     step.icon
                   )}
                 </div>
-                {/* Step title */}
                 <div className="ml-0 lg:ml-4 lg:mr-8 text-center lg:text-left">
                   <p
                     className={`text-sm font-medium ${index <= currentStep
@@ -241,7 +220,6 @@ const CheckoutPage = () => {
                     {step.title}
                   </p>
                 </div>
-                {/* Connector line between steps */}
                 {index < steps.length - 1 && (
                   <div className="h-0.5 w-8 bg-border mt-1 lg:mt-0 mr-0 lg:mr-4 hidden lg:block"></div>
                 )}
@@ -257,20 +235,9 @@ const CheckoutPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Step 1: Delivery Address Form */}
               {currentStep === 0 && (
                 <div className="space-y-4">
-                  {/* Form for inputting the delivery address */}
-                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" placeholder="First Name" />
-                    </div>
-                    <div>
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" placeholder="Last Name" />
-                    </div>
-                  </div> */}
+                  {/* Step 1: Delivery Address Form */}
                   <div>
                     <Label htmlFor="phoneNumber">Phone Number</Label>
                     <Input id="phoneNumber" placeholder="Phone Number" value={deliveryAddress.phoneNumber} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, phoneNumber: e.target.value })} />
@@ -318,10 +285,9 @@ const CheckoutPage = () => {
                   </Button>
                 </div>
               )}
-
-              {/* Step 2: Apply Coupon Code */}
               {currentStep === 1 && (
                 <div className="space-y-4">
+                  {/* Step 2: Apply Coupon Code */}
                   <div>
                     <Label htmlFor="couponCode">Enter Coupon Code</Label>
                     <Input
@@ -336,11 +302,9 @@ const CheckoutPage = () => {
                   </Button>
                 </div>
               )}
-
-              {/* Step 3: Choose Payment Method */}
               {currentStep === 2 && (
                 <div className="space-y-4">
-                  {/* Radio group for selecting payment method */}
+                  {/* Step 3: Choose Payment Method */}
                   <RadioGroup
                     value={paymentMethod}
                     onValueChange={setPaymentMethod}
@@ -377,7 +341,6 @@ const CheckoutPage = () => {
             </CardContent>
           </Card>
 
-          {/* Navigation buttons for moving between steps */}
           <div className="mt-4 flex space-x-4 justify-center lg:justify-start">
             {currentStep > 0 && (
               <Button variant={"outline"} className="bg-[#c40600] text-white" onClick={handlePrevious}>
@@ -400,38 +363,32 @@ const CheckoutPage = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {/* Display each item in the cart */}
-                {orderItems.map((item, index) => (
-                  <div key={index} className="flex justify-between">
-                    <div className="flex space-x-4">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="h-12 w-12 object-cover"
-                      />
-                      <div>
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {item.size} - {item.quantity}x
-                        </p>
+                {orderSummary ? (
+                  <>
+                    {orderSummary.items.map((item, index) => (
+                      <div key={index} className="mb-4 border-b pb-2">
+                        <div className="flex justify-between text-sm">
+                          <span>Shirt Price:</span>
+                          <span>${item.shirt.price?.toFixed(2) || "0.00"}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Monogram Price:</span>
+                          <span>${item.monogram?.style.price?.toFixed(2) || "0.00"}</span>
+                        </div>
+                        <div className="flex justify-between font-semibold mt-1">
+                          <span>Item Total:</span>
+                          <span>${item.itemTotal.toFixed(2)}</span>
+                        </div>
                       </div>
+                    ))}
+                    <div className="flex justify-between font-bold text-lg border-t pt-2">
+                      <span>Total:</span>
+                      <span>${orderSummary.total.toFixed(2)}</span>
                     </div>
-                    <div className="font-medium">${item.price.toFixed(2)}</div>
-                  </div>
-                ))}
-                {/* Display subtotal, discount, and total */}
-                <div className="flex justify-between pt-4 border-t border-border">
-                  <p>Subtotal</p>
-                  <p>${subtotal.toFixed(2)}</p>
-                </div>
-                <div className="flex justify-between">
-                  <p>Discount</p>
-                  <p>-${discount.toFixed(2)}</p>
-                </div>
-                <div className="flex justify-between font-bold">
-                  <p>Total</p>
-                  <p>${total.toFixed(2)}</p>
-                </div>
+                  </>
+                ) : (
+                  <p>Loading order summary...</p>
+                )}
               </div>
             </CardContent>
           </Card>

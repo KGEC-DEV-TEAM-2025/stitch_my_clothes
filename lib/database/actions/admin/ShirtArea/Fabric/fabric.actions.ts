@@ -7,7 +7,7 @@ import cloudinary from "cloudinary";
 // Cloudinary configuration
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_NAME,
-  api_key: process.env.CLOUNDINARY_API_KEY,
+  api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_SECRET,
 });
 
@@ -22,10 +22,13 @@ export const createFabric = async (
   fabricName: string,
   image: string // Base64 string for image upload
 ) => {
+  console.log("createFabric called with:", { fabricName });
   try {
     await connectToDatabase();
+    console.log("Connected to database");
 
     if (!fabricName || !image) {
+      console.log("Fabric name or image is missing");
       return {
         message: "Fabric name and image are required.",
         success: false,
@@ -34,6 +37,7 @@ export const createFabric = async (
 
     // Check if fabric already exists
     const existingFabric = await FabricModel.findOne({ fabricName });
+    console.log("Existing fabric check result:", existingFabric);
     if (existingFabric) {
       return {
         message: "Fabric with this name already exists.",
@@ -47,6 +51,7 @@ export const createFabric = async (
     formData.append("file", new Blob([buffer], { type: "image/jpeg" }));
     formData.append("upload_preset", "fabric_images");
 
+    console.log("Uploading image to Cloudinary...");
     const response = await fetch(
       `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_NAME}/image/upload`,
       {
@@ -56,18 +61,7 @@ export const createFabric = async (
     );
 
     const uploadedImage = await response.json();
-
-    // Log full response for debugging
-    // console.log("Cloudinary Response:", uploadedImage);
-
-    // Ensure Cloudinary response contains both URL and public_id
-    // if (!uploadedImage.secure_url || !uploadedImage.public_id) {
-    //   throw new Error(
-    //     `Image upload failed: Missing secure_url or public_id. Response: ${JSON.stringify(
-    //       uploadedImage
-    //     )}`
-    //   );
-    // }
+    console.log("Cloudinary response:", uploadedImage);
 
     // Create a new fabric in the database
     const newFabric = new FabricModel({
@@ -79,6 +73,7 @@ export const createFabric = async (
     });
 
     await newFabric.save();
+    console.log("New fabric saved:", newFabric);
 
     return {
       message: `Fabric ${fabricName} has been successfully created.`,
@@ -95,10 +90,13 @@ export const createFabric = async (
 
 // Delete Fabric entry and its image from Cloudinary
 export const deleteFabric = async (fabricId: string) => {
+  console.log("deleteFabric called with fabricId:", fabricId);
   try {
     await connectToDatabase();
+    console.log("Connected to database");
 
     const fabric = await FabricModel.findById(fabricId);
+    console.log("Fabric found:", fabric);
 
     if (!fabric) {
       return {
@@ -108,11 +106,13 @@ export const deleteFabric = async (fabricId: string) => {
     }
 
     // Delete image from Cloudinary
-    const imagePublicId = fabric.image.public_id; // Get public_id directly from the fabric document
+    const imagePublicId = fabric.image.public_id;
+    console.log("Deleting image from Cloudinary with public_id:", imagePublicId);
     await cloudinary.v2.uploader.destroy(imagePublicId);
 
     // Delete fabric document from MongoDB
     await FabricModel.findByIdAndDelete(fabricId);
+    console.log("Fabric deleted from MongoDB");
 
     return {
       message:
@@ -120,7 +120,7 @@ export const deleteFabric = async (fabricId: string) => {
       success: true,
     };
   } catch (error: any) {
-    console.log(error);
+    console.log("Error deleting fabric:", error);
     return {
       message: "Error deleting fabric.",
       success: false,
@@ -134,10 +134,13 @@ export const updateFabric = async (
   newFabricName: string,
   newImage: string // Base64 string for image upload (if updated)
 ) => {
+  console.log("updateFabric called with:", { fabricId, newFabricName, hasNewImage: !!newImage });
   try {
     await connectToDatabase();
+    console.log("Connected to database");
 
     const fabric = await FabricModel.findById(fabricId);
+    console.log("Existing fabric:", fabric);
 
     if (!fabric) {
       return {
@@ -148,6 +151,7 @@ export const updateFabric = async (
 
     if (newFabricName) {
       fabric.fabricName = newFabricName;
+      console.log("Updated fabricName to:", newFabricName);
     }
 
     if (newImage) {
@@ -157,6 +161,7 @@ export const updateFabric = async (
       formData.append("file", new Blob([buffer], { type: "image/jpeg" }));
       formData.append("upload_preset", "fabric_images");
 
+      console.log("Uploading new image to Cloudinary...");
       const response = await fetch(
         `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_NAME}/image/upload`,
         {
@@ -166,21 +171,23 @@ export const updateFabric = async (
       );
 
       const uploadedImage = await response.json();
+      console.log("New Cloudinary response:", uploadedImage);
       fabric.image = {
-        url: uploadedImage.secure_url, // Update the image URL
-        public_id: uploadedImage.public_id, // Update the public_id
+        url: uploadedImage.secure_url,
+        public_id: uploadedImage.public_id,
       };
     }
 
     // Save the updated fabric
     await fabric.save();
+    console.log("Fabric updated and saved:", fabric);
 
     return {
       message: "Successfully updated the fabric!",
       success: true,
     };
   } catch (error: any) {
-    console.log(error);
+    console.log("Error updating fabric:", error);
     return {
       message: "Error updating fabric.",
       success: false,
@@ -189,14 +196,17 @@ export const updateFabric = async (
 };
 
 export const getAllFabrics = async () => {
+  console.log("getAllFabrics called");
   try {
     await connectToDatabase();
+    console.log("Connected to database");
 
     const fabrics = await FabricModel.find().sort({ updatedAt: -1 });
+    console.log("Fabrics retrieved:", fabrics);
 
     return JSON.parse(JSON.stringify(fabrics));
   } catch (error: any) {
-    console.log(error);
+    console.log("Error in getAllFabrics:", error);
     return [];
   }
 };
