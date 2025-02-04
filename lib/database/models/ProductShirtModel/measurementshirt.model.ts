@@ -38,7 +38,7 @@ const MeasurementSchema: Schema = new Schema(
     hips: { type: Number, required: true },
     elbowWidth: { type: Number, required: true },
     upperArm: { type: Number, required: true },
-    shoulder: { type: Number, required: true },
+    shoulder: { type: Number, required: false },
   },
   { timestamps: true }
 );

@@ -1,6 +1,6 @@
 "use server"
 
-import connectToDatabase from "../connect";
+import {connectToDatabase} from "../connect";
 import MeasurementModel from "../models/ProductShirtModel/measurementshirt.model";
 
 export async function createMeasurement(measurements: any) {
