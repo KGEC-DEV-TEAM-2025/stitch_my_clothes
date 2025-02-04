@@ -1,15 +1,16 @@
 "use client";
 import useProductData from "@/hooks/shirt-details";
-import Link from "next/link";
+import { createShirt } from "@/lib/database/actions/admin/ShirtArea/Shirt/shirt.actions";
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 const sections = [
-  "bottoms",
-  "backs",
-  "plackets",
-  "pockets",
+  "bottom",
+  "back",
+  "placket",
+  "pocket",
   "sleeves",
-  "fits",
+  "fit",
   "collarStyle",
   "collarHeight",
   "collarButton",
@@ -26,12 +27,12 @@ interface ProductItem {
 }
 
 interface ProductData {
-  bottoms?: ProductItem[];
-  backs?: ProductItem[];
-  plackets?: ProductItem[];
-  pockets?: ProductItem[];
+  bottom?: ProductItem[];
+  back?: ProductItem[];
+  placket?: ProductItem[];
+  pocket?: ProductItem[];
   sleeves?: ProductItem[];
-  fits?: ProductItem[];
+  fit?: ProductItem[];
   collarStyle?: ProductItem[];
   collarHeight?: {
     _id: string;
@@ -43,11 +44,10 @@ interface ProductData {
   cuffStyle?: ProductItem[];
   cuffLinks?: ProductItem[];
 }
-
 interface ShirtItem {
   name: string;
   image: string;
-  price: string;
+  price: number;
 }
 
 interface Shirt {
@@ -62,8 +62,6 @@ interface Shirt {
   cuffLinks?: ShirtItem;
   fit?: ShirtItem;
   sleeves?: ShirtItem;
-  colorId?: string;
-  fabricId?: string;
 }
 
 const ShirtCustomizer = () => {
@@ -86,12 +84,47 @@ const ShirtCustomizer = () => {
   const [selectedBackImage, setSelectedBackImage] = useState<string | null>(
     null
   );
-
   const [shirt, setShirt] = useState<Shirt>({});
 
-  useEffect(() => {
-    console.log(shirt);
-  }, [shirt]);
+  const handleCreateShirt = async () => {
+    const price = totalPrice;
+    try {
+      const colorId = localStorage.getItem("colorId");
+      const fabricId = localStorage.getItem("fabricId");
+
+      if (!colorId || !fabricId) {
+        toast.error("Color ID and Fabric ID are required.");
+        return;
+      }
+
+      const response = await createShirt(
+        price,
+        shirt.bottom,
+        shirt.back,
+        shirt.sleeves,
+        shirt.cuffStyle,
+        shirt.cuffLinks,
+        shirt.collarStyle,
+        shirt.collarHeight,
+        shirt.collarButton,
+        shirt.placket,
+        shirt.pocket,
+        shirt.fit,
+        watchCompatible,
+        colorId,
+        fabricId
+      );
+
+      if (response.success) {
+        toast.success("Shirt created successfully!");
+      } else {
+        toast.error(response.message || "Failed to create the shirt.");
+      }
+    } catch (error: any) {
+      console.error(error);
+      toast.error("An unexpected error occurred.");
+    }
+  };
 
   const assignItemToSection = (section: keyof Shirt, item: ProductItem) => {
     setShirt((prev) => {
@@ -114,6 +147,10 @@ const ShirtCustomizer = () => {
       0
     );
   };
+
+  useEffect(() => {
+    console.log(shirt);
+  }, [shirt]);
 
   useEffect(() => {
     // Retrieve from localStorage if available and set default selections
@@ -166,7 +203,7 @@ const ShirtCustomizer = () => {
       localStorage.removeItem("cuffLinks");
     }
 
-    if (section === "backs") {
+    if (section === "back") {
       setIsBackPopupOpen(true);
       setSelectedBackImage(item.image?.url); // Adjust if item.image is not an object with 'url'
 
@@ -206,9 +243,9 @@ const ShirtCustomizer = () => {
     if (section === "collarButton") return 60;
     if (section === "cuffStyle") return 70;
     if (section === "cuffLinks") return 80;
-    if (section === "plackets" || section === "pockets") return 40;
+    if (section === "placket" || section === "pocket") return 40;
     if (section === "sleeves") return 30;
-    if (section === "fits") return 20;
+    if (section === "fit") return 20;
     if (section === "bottom") return 20;
     return index;
   };
@@ -241,12 +278,12 @@ const ShirtCustomizer = () => {
 
       <div className="fixed bottom-4 right-[20rem] bg-white p-4 shadow-lg rounded-lg flex items-center space-x-4">
         <div className="text-xl font-bold">Total: ${totalPrice.toFixed(2)}</div>
-        <Link
-          href="/"
+        <button
+          onClick={handleCreateShirt}
           className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition"
         >
           Next
-        </Link>
+        </button>
       </div>
 
       {/* Button to close the back popup */}
