@@ -4,27 +4,27 @@ import Image from "next/image";
 const DiverseShirt = () => {
   const fabrics = [
     {
-      src: "/fab1.webp",
+      src: "https://res.cloudinary.com/dlxpcyiin/image/upload/v1738749117/e430f03e-d3c2-41df-b52b-b450b54ab7ea.png",
       alt: "Fabric 1",
     },
     {
-      src: "/fab3.webp",
+      src: "https://res.cloudinary.com/dlxpcyiin/image/upload/v1738749039/Screenshot_2025-02-05_151610_iweviv.png",
       alt: "Fabric 2",
     },
     {
-      src: "/fab2.jpg",
+      src: "https://res.cloudinary.com/dlxpcyiin/image/upload/v1738749051/Screenshot_2025-02-05_151356_o24zxe.png",
       alt: "Fabric 3",
     },
     {
-      src: "/fab4.webp",
+      src: "https://res.cloudinary.com/dlxpcyiin/image/upload/v1738749038/Screenshot_2025-02-05_151459_y3696q.png",
       alt: "Fabric 4",
     },
     {
-      src: "/fab5.webp",
+      src: "https://res.cloudinary.com/dlxpcyiin/image/upload/v1738749007/Screenshot_2025-02-05_151331_od6ig3.png",
       alt: "Fabric 5",
     },
     {
-      src: "/fab6.jpg",
+      src: "https://res.cloudinary.com/dlxpcyiin/image/upload/v1738748986/Screenshot_2025-02-05_151416_jimnh4.png",
       alt: "Fabric 6",
     },
   ];

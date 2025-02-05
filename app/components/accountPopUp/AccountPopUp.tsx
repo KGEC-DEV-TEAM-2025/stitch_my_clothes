@@ -220,7 +220,7 @@ const AccountPopUp = () => {
       </Dialog>
 
       <Dialog open={accountMenuOpen} onOpenChange={setAccountMenuOpen}>
-        <DialogContent className="sm:max-w-[725px] flex">
+        <DialogContent className="sm:max-w-[725px] flex md:flex-row flex-col">
           <Card className="space-y-3">
             <Tabs defaultValue="signup">
               <TabsList className="grid w-full grid-cols-2">
@@ -378,12 +378,12 @@ const AccountPopUp = () => {
               </TabsContent>
             </Tabs>
           </Card>
-          <div className="space-y-10 flex flex-col items-center justify-center">
+          <div className="space-y-10 flex flex-col items-center justify-center md:block hidden">
             <div className="flex flex-col items-center justify-center space-y-2 pt-4 px-2">
               <h1 className="sm:text-4xl text-2xl font-bold text-[#646464]">GET 25% OFF</h1>
               <p className="text-md font-semibold text-center">shop at stich my clothes and get discounts.</p>
             </div>
-            <Image src={'/archive/stylish-groom-getting-ready-in-morning-putting-on-2021-08-29-11-41-08-utc.JPG'} alt="login" className="object-cover" width={400} height={100} />
+            <Image src={'https://res.cloudinary.com/dlxpcyiin/image/upload/v1738748939/Screenshot_2025-02-05_151556_e5gu5z.png'} alt="login" className="object-cover" width={400} height={100} />
           </div>
         </DialogContent>
       </Dialog>
