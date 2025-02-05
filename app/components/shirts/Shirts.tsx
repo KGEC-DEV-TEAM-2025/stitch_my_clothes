@@ -3,43 +3,43 @@ import Image from "next/image";
 const Shirts = () => {
   const fabrics = [
     {
-      src: "/archive/stylish-groom-getting-ready-in-morning-putting-on-2021-08-29-11-41-08-utc.JPG",
+      src: "https://res.cloudinary.com/dlxpcyiin/image/upload/v1738748665/d67b1100-0c6f-48d0-b633-9c448d8dc368.png",
       alt: "Fabric 1",
     },
     {
-      src: "/archive/stylish-groom-putting-on-shirt-with-cufflinks-and-2021-08-29-09-26-04-utc.JPG",
+      src: "https://res.cloudinary.com/dlxpcyiin/image/upload/v1738748985/Screenshot_2025-02-05_151644_tin9jw.png",
       alt: "Fabric 2",
     },
     {
-      src: "/archive/portrait-of-a-man-in-shirt-2021-08-28-04-59-59-utc.jpg",
+      src: "https://res.cloudinary.com/dlxpcyiin/image/upload/v1738748988/Screenshot_2025-02-05_151511_jdrysm.png",
       alt: "Fabric 3",
     },
     {
-      src: "/archive/relaxed-young-man-with-checkered-shirt-posing-2021-08-26-23-05-04-utc.jpg",
+      src: "https://res.cloudinary.com/dlxpcyiin/image/upload/v1738748949/Screenshot_2025-02-05_151631_nkr94u.png",
       alt: "Fabric 4",
     },
     {
-      src: "/archive/row-of-hangers-with-shirts-in-a-store-2022-12-16-21-40-20-utc.jpg",
+      src: "https://res.cloudinary.com/dlxpcyiin/image/upload/v1738748939/Screenshot_2025-02-05_151556_e5gu5z.png",
       alt: "Fabric 5",
     },
     {
-      src: "/archive/shirts-2022-11-10-08-14-58-utc.jpg",
+      src: "https://res.cloudinary.com/dlxpcyiin/image/upload/v1738749051/Screenshot_2025-02-05_151356_o24zxe.png",
       alt: "Fabric 6",
     },
     {
-      src: "/archive/shirt-hanging-on-rail-at-clothes-shop-2021-08-30-20-34-51-utc.jpg",
+      src: "https://res.cloudinary.com/dlxpcyiin/image/upload/v1738749007/Screenshot_2025-02-05_151331_od6ig3.png",
       alt: "Fabric 3",
     },
     {
-      src: "/archive/stylish-groom-putting-on-shirt-with-cufflinks-and-2021-08-29-09-25-58-utc.JPG",
+      src: "https://res.cloudinary.com/dlxpcyiin/image/upload/v1738748950/Screenshot_2025-02-05_151541_qbhw9z.png",
       alt: "Fabric 4",
     },
     {
-      src: "/archive/groom-buttoning-cuffs-of-the-shirt-2023-03-02-19-26-01-utc.jpg",
+      src: "https://res.cloudinary.com/dlxpcyiin/image/upload/v1738749039/Screenshot_2025-02-05_151610_iweviv.png",
       alt: "Fabric 5",
     },
     {
-      src: "/archive/portrait-of-a-young-man-in-a-suit-and-with-a-bow-t-2022-11-12-08-15-04-utc.jpg",
+      src: "https://res.cloudinary.com/dlxpcyiin/image/upload/v1738749051/Screenshot_2025-02-05_151356_o24zxe.png",
       alt: "Fabric 6",
     },
   ];
